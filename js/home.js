@@ -143,7 +143,7 @@ var MAC={
     },
     'Qrcode':{
         'Init':function(){
-            $('.mac_qrcode').attr('src','//api.maccms.com/qrcode/?w=150&h=150&url=' + MAC.Url);
+            $('.mac_qrcode').attr('src','//api.maccms.com/qrcode/index/w/150/h/150/url/' + MAC.Url);
         }
     },
     'Shorten': {
@@ -155,7 +155,7 @@ var MAC={
         },
         'Get':function(url,call){
             url=url||location.href;
-            MAC.Ajax('//api.maccms.com/shorten/?callback=callback&url='+ encodeURIComponent(url),'get','jsonp','',function(r){
+            MAC.Ajax('//api.maccms.com/shorten/index/url/'+ encodeURIComponent(url),'get','jsonp','',function(r){
                 if (r.code == 1) {
                     if($('.mac_shorten').length>0) {
                         $('.mac_shorten').val(r.data.url_short);
@@ -370,10 +370,7 @@ var MAC={
         },
         'Report':function(name,id){
             MAC.Pop.Show(400,300,'数据报错',maccms.path+'/index.php/gbook/report.html?id='+id+'&name='+ encodeURIComponent(name),function(r){
-            });
-        },
-		'Noinfo':function(name,id){
-            MAC.Pop.Show(400,300,'留言反馈',maccms.path+'/index.php/gbook/report.html?id='+id+'&name='+ encodeURIComponent(name),function(r){
+
             });
         }
     },
@@ -521,15 +518,14 @@ var MAC={
             $('.mac_history_box').html('<li class="hx_clear">已清空观看记录。</li>');
         },
     },
-
     'Ulog':{
         'Init':function(){
             MAC.Ulog.Set();
             MAC.Ulog.Click();
 
         },
-        'Get':function(type,page,limit,call){
-            MAC.Ajax(maccms.path+'/index.php/user/ajax_ulog/?ac=list&type='+type+'&page='+page+'&limit='+limit,'get','json','',call);
+        'Get':function(mid,id,type,page,limit,call){
+            MAC.Ajax(maccms.path+'/index.php/user/ajax_ulog/?ac=list&mid='+mid+'&id='+id+'&type='+type+'&page='+page+'&limit='+limit,'get','json','',call);
         },
         'Set':function(){
             if($(".mac_ulog_set").attr('data-mid')){
@@ -557,6 +553,29 @@ var MAC={
                         }
                     });
                 }
+            });
+        }
+    },
+    'Website':{
+        'Referer':function() {
+            if($('.mac_referer').length==0){
+                return;
+            }
+
+            var url = document.referrer
+                ,domain=''
+                ,host = window.location.host
+                ,reg = /^http(s)?:\/\/(.*?)\//i
+                ,mc = url.match(reg);
+
+            if(url=='' || url.indexOf(host)!=-1 || mc ==null){
+                return;
+            }
+            domain = mc[2];
+            MAC.Ajax(maccms.path + '/index.php/ajax/referer?domain='+encodeURIComponent(domain)+'&url='+encodeURIComponent(url)+'&type=update','get','json','',function(r){
+                if (r.code == 1) {
+                }
+                console.log(r);
             });
         }
     },
@@ -588,7 +607,6 @@ var MAC={
 
             if(MAC.Cookie.Get('user_id') !=undefined && MAC.Cookie.Get('user_id')!=''){
                 var url = maccms.path + '/index.php/user';
-				var urlfavs = maccms.path + '/index.php/user/favs';
                 MAC.User.UserId = MAC.Cookie.Get('user_id');
                 MAC.User.UserName = MAC.Cookie.Get('user_name');
                 MAC.User.GroupId = MAC.Cookie.Get('group_id');
@@ -598,27 +616,20 @@ var MAC={
 
                 if($('.mac_user').length >0) {
                     if ($('.mac_user').prop("outerHTML").substr(0, 2) == '<a') {
-						$('.mac_user').attr('title', MAC.User.UserName);
-						$('.mac_user').text('');
-                        $('.mac_user').addClass('face_pic');
-						$('.mac_user').append('<img class="face" src="' + MAC.User.Portrait + '" alt="会员头像">');
-						var Ww = $(window).width();if (Ww < 820){$('.mac_user').attr('href', url);}
+                        $('.mac_user').attr('href', url);
+                        $('.mac_user').text(MAC.User.UserName);
                     }
                     else {
                         //$('.mac_user').html('<a class="mac_text" href="'+ url +'">'+ name +'</a>');
                     }
-					var VIP = '<i class="iconfont user_vip"></i>';
-					if(MAC.User.GroupId <3){
-						var GName = MAC.User.GroupName;
-					}else{
-						var GName = VIP + MAC.User.GroupName;
-					}
 
-                    var html = '<div class="mac_user_box dropbox user">';
-                    html += '<div class="user_list_box"><div class="user_list"><a class="mac_user_n" href="javascript:;">'+MAC.User.UserName+'</a><a class="mac_user_g" href="javascript:;">' + GName + '</a><a href="' + url + '" target="_blank"><i class="iconfont"></i>个人中心</a><a href="' + urlfavs + '" target="_blank"><i class="iconfont"></i>我的收藏</a><a href="javascript:;" onclick="MAC.User.Logout();" target="_self"><i class="iconfont"></i>退出账号</a></div></div>'
+                    var html = '<div class="mac_drop_box mac_user_box" style="display: none;">';
+                    html += '<ul class="logged"><li><a target="_blank" href="' + url + '">用户中心</a></li><li class="logout"><a class="logoutbt" href="javascript:;" onclick="MAC.User.Logout();" target="_self"><i class="user-logout"></i>退出</a></li></ul>'
 
                     $('.mac_user').after(html);
-					$('.mac_user').removeClass('mac_user');
+                    var h = $('.mac_user').height();
+                    var position = $('.mac_user').position();
+                    $('.mac_user_box').css({'left': position.left, 'top': (position.top + h)});
                 }
 
             }
@@ -694,7 +705,7 @@ var MAC={
                 MAC.Pop.Remove();
             }
             $('body').append('<div class="mac_pop_msg_bg"></div><div class="mac_pop_msg"><div class="pop-msg"></div></div>');
-            $('.mac_pop_msg .pop_close,.mac_pop_bg').click(function(){
+            $('.mac_pop_msg .pop_close').click(function(){
                 $('.mac_pop_msg').remove();
             });
 
@@ -710,12 +721,12 @@ var MAC={
             }
 
             $('body').append('<div class="mac_pop_bg"></div><div class="mac_pop"><div class="pop_top"><h2></h2><span class="pop_close">Ｘ</span></div><div class="pop_content"></div></div>');
-            $('.mac_pop .pop_close,.mac_pop_bg').click(function(){
+            $('.mac_pop .pop_close').click(function(){
                 $('.mac_pop_bg,.mac_pop').remove();
             });
 
             $('.mac_pop').width($w);
-      
+            $('.mac_pop').height($h);
             $('.pop_content').html('');
             $('.pop_top').find('h2').html($title);
 
@@ -918,6 +929,8 @@ $(function(){
     MAC.Ulog.Init();
     //联想搜索初始化
     MAC.Suggest.Init('.mac_wd',1,'');
+    //网址导航来路统计
+    MAC.Website.Referer();
     //定时任务初始化
     MAC.Timming();
 });
