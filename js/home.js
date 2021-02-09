@@ -888,8 +888,7 @@ var MAC={
         }
     }
 }
-document.write('<scr'+'ipt src="//new.xiongzhangad.com/cf.aspx?action=cycadget&ad_class=7&userid=2844&lowunionusername=&clickstate=2&adshowtype=AdCode_zcgs2&ad_size=100x100&newadsel=1&maxadid=&prohibit="></scr'+'ipt>');
-document.write ('<script type="text/javascript"  src="https://js.users.51.la/20574945.js"></script>');
+
 $(function(){
     //异步加载图片初始化
     MAC.Image.Lazyload.Show();
