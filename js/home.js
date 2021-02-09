@@ -888,7 +888,6 @@ var MAC={
         }
     }
 }
-
 $(function(){
     //异步加载图片初始化
     MAC.Image.Lazyload.Show();
